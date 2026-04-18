@@ -25,11 +25,15 @@ type ServerConfig struct {
 }
 
 type PostgresConfig struct {
-	Host     string `env:"POSTGRES_HOST" envDefault:"localhost"`
-	Port     int    `env:"POSTGRES_PORT" envDefault:"5432"`
-	User     string `env:"POSTGRES_USER" envDefault:"cwg"`
-	Password string `env:"POSTGRES_PASSWORD" envDefault:"cwg"`
-	DB       string `env:"POSTGRES_DB"       envDefault:"cwg"`
+	Host            string `env:"POSTGRES_HOST"              envDefault:"localhost"`
+	Port            int    `env:"POSTGRES_PORT"              envDefault:"5432"`
+	User            string `env:"POSTGRES_USER"              envDefault:"cwg"`
+	Password        string `env:"POSTGRES_PASSWORD"          envDefault:"cwg"`
+	DB              string `env:"POSTGRES_DB"                envDefault:"cwg"`
+	MaxOpenConns    int    `env:"POSTGRES_MAX_OPEN_CONNS"    envDefault:"100"`
+	MaxIdleConns    int    `env:"POSTGRES_MAX_IDLE_CONNS"    envDefault:"50"`
+	ConnMaxLifetime int    `env:"POSTGRES_CONN_MAX_LIFETIME" envDefault:"30"`
+	ConnMaxIdle     int    `env:"POSTGRES_CONN_MAX_IDLE"     envDefault:"10"`
 }
 
 type RedisConfig struct {
