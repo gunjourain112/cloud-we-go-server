@@ -27,6 +27,12 @@ go.work.sum
 # env file
 .env
 
+# Mock generated files
+**/mocks/
+
+# Build output
+bin/
+
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
