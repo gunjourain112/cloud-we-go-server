@@ -1,0 +1,23 @@
+services:
+  hertz-server:
+    build: .
+    ports:
+      - "8081:8081"
+    environment:
+      - APP_ENV=development
+      - HERTZ_PORT=8081
+      - POSTGRES_HOST=cwg_postgres
+      - REDIS_HOST=cwg_redis
+      - MONGO_URI=mongodb://cwg:cwg@cwg_mongo:27017
+      - POSTGRES_AUTO_MIGRATE=false
+    deploy:
+      resources:
+        limits:
+          cpus: '3.0'
+          memory: 1G
+    networks:
+      - cloud-we-go-server_default
+
+networks:
+  cloud-we-go-server_default:
+    external: true

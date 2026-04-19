@@ -3,9 +3,9 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '1m', target: 5000 },  // 1분간 5천 명
-    { duration: '2m', target: 20000 }, // 2분간 2만 명까지
-    { duration: '1m', target: 20000 }, // 1분 유지
+    { duration: '30s', target: 5000 },
+    { duration: '1m', target: 20000 },
+    { duration: '1m', target: 20000 },
     { duration: '30s', target: 0 },
   ],
 };

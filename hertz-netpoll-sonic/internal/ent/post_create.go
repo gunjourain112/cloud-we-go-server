@@ -1,0 +1,327 @@
+package ent
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"time"
+
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/ent/post"
+	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/ent/tag"
+	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/ent/user"
+)
+
+type PostCreate struct {
+	config
+	mutation *PostMutation
+	hooks    []Hook
+}
+
+func (_c *PostCreate) SetTitle(v string) *PostCreate {
+	_c.mutation.SetTitle(v)
+	return _c
+}
+
+func (_c *PostCreate) SetBody(v string) *PostCreate {
+	_c.mutation.SetBody(v)
+	return _c
+}
+
+func (_c *PostCreate) SetAuthorID(v uuid.UUID) *PostCreate {
+	_c.mutation.SetAuthorID(v)
+	return _c
+}
+
+func (_c *PostCreate) SetCreatedAt(v time.Time) *PostCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+func (_c *PostCreate) SetNillableCreatedAt(v *time.Time) *PostCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+func (_c *PostCreate) SetUpdatedAt(v time.Time) *PostCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+func (_c *PostCreate) SetNillableUpdatedAt(v *time.Time) *PostCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
+func (_c *PostCreate) SetID(v uuid.UUID) *PostCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+func (_c *PostCreate) SetNillableID(v *uuid.UUID) *PostCreate {
+	if v != nil {
+		_c.SetID(*v)
+	}
+	return _c
+}
+
+func (_c *PostCreate) SetAuthor(v *User) *PostCreate {
+	return _c.SetAuthorID(v.ID)
+}
+
+func (_c *PostCreate) AddTagIDs(ids ...uuid.UUID) *PostCreate {
+	_c.mutation.AddTagIDs(ids...)
+	return _c
+}
+
+func (_c *PostCreate) AddTags(v ...*Tag) *PostCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddTagIDs(ids...)
+}
+
+func (_c *PostCreate) Mutation() *PostMutation {
+	return _c.mutation
+}
+
+func (_c *PostCreate) Save(ctx context.Context) (*Post, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
+}
+
+func (_c *PostCreate) SaveX(ctx context.Context) *Post {
+	v, err := _c.Save(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func (_c *PostCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
+	return err
+}
+
+func (_c *PostCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+func (_c *PostCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		v := post.DefaultCreatedAt()
+		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		v := post.DefaultUpdatedAt()
+		_c.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := _c.mutation.ID(); !ok {
+		v := post.DefaultID()
+		_c.mutation.SetID(v)
+	}
+}
+
+func (_c *PostCreate) check() error {
+	if _, ok := _c.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Post.title"`)}
+	}
+	if v, ok := _c.mutation.Title(); ok {
+		if err := post.TitleValidator(v); err != nil {
+			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Post.title": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Body(); !ok {
+		return &ValidationError{Name: "body", err: errors.New(`ent: missing required field "Post.body"`)}
+	}
+	if v, ok := _c.mutation.Body(); ok {
+		if err := post.BodyValidator(v); err != nil {
+			return &ValidationError{Name: "body", err: fmt.Errorf(`ent: validator failed for field "Post.body": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.AuthorID(); !ok {
+		return &ValidationError{Name: "author_id", err: errors.New(`ent: missing required field "Post.author_id"`)}
+	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Post.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Post.updated_at"`)}
+	}
+	if len(_c.mutation.AuthorIDs()) == 0 {
+		return &ValidationError{Name: "author", err: errors.New(`ent: missing required edge "Post.author"`)}
+	}
+	return nil
+}
+
+func (_c *PostCreate) sqlSave(ctx context.Context) (*Post, error) {
+	if err := _c.check(); err != nil {
+		return nil, err
+	}
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{msg: err.Error(), wrap: err}
+		}
+		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
+	return _node, nil
+}
+
+func (_c *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
+	var (
+		_node = &Post{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(post.Table, sqlgraph.NewFieldSpec(post.FieldID, field.TypeUUID))
+	)
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := _c.mutation.Title(); ok {
+		_spec.SetField(post.FieldTitle, field.TypeString, value)
+		_node.Title = value
+	}
+	if value, ok := _c.mutation.Body(); ok {
+		_spec.SetField(post.FieldBody, field.TypeString, value)
+		_node.Body = value
+	}
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(post.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(post.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
+	if nodes := _c.mutation.AuthorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   post.AuthorTable,
+			Columns: []string{post.AuthorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.AuthorID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   post.TagsTable,
+			Columns: post.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	return _node, _spec
+}
+
+type PostCreateBulk struct {
+	config
+	err      error
+	builders []*PostCreate
+}
+
+func (_c *PostCreateBulk) Save(ctx context.Context) ([]*Post, error) {
+	if _c.err != nil {
+		return nil, _c.err
+	}
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Post, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
+		func(i int, root context.Context) {
+			builder := _c.builders[i]
+			builder.defaults()
+			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
+				mutation, ok := m.(*PostMutation)
+				if !ok {
+					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				if err := builder.check(); err != nil {
+					return nil, err
+				}
+				builder.mutation = mutation
+				var err error
+				nodes[i], specs[i] = builder.createSpec()
+				if i < len(mutators)-1 {
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
+				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{msg: err.Error(), wrap: err}
+						}
+					}
+				}
+				if err != nil {
+					return nil, err
+				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
+				return nodes[i], nil
+			})
+			for i := len(builder.hooks) - 1; i >= 0; i-- {
+				mut = builder.hooks[i](mut)
+			}
+			mutators[i] = mut
+		}(i, ctx)
+	}
+	if len(mutators) > 0 {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
+			return nil, err
+		}
+	}
+	return nodes, nil
+}
+
+func (_c *PostCreateBulk) SaveX(ctx context.Context) []*Post {
+	v, err := _c.Save(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func (_c *PostCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
+	return err
+}
+
+func (_c *PostCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}

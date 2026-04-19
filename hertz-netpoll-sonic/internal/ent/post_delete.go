@@ -1,0 +1,78 @@
+package ent
+
+import (
+	"context"
+
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/ent/post"
+	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/ent/predicate"
+)
+
+type PostDelete struct {
+	config
+	hooks    []Hook
+	mutation *PostMutation
+}
+
+func (_d *PostDelete) Where(ps ...predicate.Post) *PostDelete {
+	_d.mutation.Where(ps...)
+	return _d
+}
+
+func (_d *PostDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
+}
+
+func (_d *PostDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return n
+}
+
+func (_d *PostDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(post.Table, sqlgraph.NewFieldSpec(post.FieldID, field.TypeUUID))
+	if ps := _d.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
+	if err != nil && sqlgraph.IsConstraintError(err) {
+		err = &ConstraintError{msg: err.Error(), wrap: err}
+	}
+	_d.mutation.done = true
+	return affected, err
+}
+
+type PostDeleteOne struct {
+	_d *PostDelete
+}
+
+func (_d *PostDeleteOne) Where(ps ...predicate.Post) *PostDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
+}
+
+func (_d *PostDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
+	switch {
+	case err != nil:
+		return err
+	case n == 0:
+		return &NotFoundError{post.Label}
+	default:
+		return nil
+	}
+}
+
+func (_d *PostDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
