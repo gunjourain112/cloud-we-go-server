@@ -59,15 +59,23 @@ func (_u *PostUpdate) SetNillableBody(v *string) *PostUpdate {
 	return _u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *PostUpdate) SetUpdatedAt(v time.Time) *PostUpdate {
-	_u.mutation.SetUpdatedAt(v)
+// SetAuthorID sets the "author_id" field.
+func (_u *PostUpdate) SetAuthorID(v uuid.UUID) *PostUpdate {
+	_u.mutation.SetAuthorID(v)
 	return _u
 }
 
-// SetAuthorID sets the "author" edge to the User entity by ID.
-func (_u *PostUpdate) SetAuthorID(id uuid.UUID) *PostUpdate {
-	_u.mutation.SetAuthorID(id)
+// SetNillableAuthorID sets the "author_id" field if the given value is not nil.
+func (_u *PostUpdate) SetNillableAuthorID(v *uuid.UUID) *PostUpdate {
+	if v != nil {
+		_u.SetAuthorID(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *PostUpdate) SetUpdatedAt(v time.Time) *PostUpdate {
+	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -320,15 +328,23 @@ func (_u *PostUpdateOne) SetNillableBody(v *string) *PostUpdateOne {
 	return _u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *PostUpdateOne) SetUpdatedAt(v time.Time) *PostUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
+// SetAuthorID sets the "author_id" field.
+func (_u *PostUpdateOne) SetAuthorID(v uuid.UUID) *PostUpdateOne {
+	_u.mutation.SetAuthorID(v)
 	return _u
 }
 
-// SetAuthorID sets the "author" edge to the User entity by ID.
-func (_u *PostUpdateOne) SetAuthorID(id uuid.UUID) *PostUpdateOne {
-	_u.mutation.SetAuthorID(id)
+// SetNillableAuthorID sets the "author_id" field if the given value is not nil.
+func (_u *PostUpdateOne) SetNillableAuthorID(v *uuid.UUID) *PostUpdateOne {
+	if v != nil {
+		_u.SetAuthorID(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *PostUpdateOne) SetUpdatedAt(v time.Time) *PostUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 

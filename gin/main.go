@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/auth"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/comment"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/post"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/user"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
@@ -36,6 +37,9 @@ func main() {
 			post.NewRepository,
 			post.NewService,
 			post.NewHandler,
+			comment.NewRepository,
+			comment.NewService,
+			comment.NewHandler,
 			newGinEngine,
 		),
 		fx.Invoke(registerRoutes, startServer),
@@ -62,6 +66,7 @@ func registerRoutes(
 	cfg *config.Config,
 	authHandler *auth.Handler,
 	postHandler *post.Handler,
+	commentHandler *comment.Handler,
 ) {
 	authGroup := r.Group("/auth")
 	{
@@ -72,6 +77,7 @@ func registerRoutes(
 	// Public routes
 	r.GET("/posts", postHandler.List)
 	r.GET("/posts/:id", postHandler.Get)
+	r.GET("/posts/:id/comments", commentHandler.List)
 
 	// Protected routes
 	protected := r.Group("")
@@ -79,6 +85,11 @@ func registerRoutes(
 	{
 		protected.POST("/posts", postHandler.Create)
 		protected.DELETE("/posts/:id", postHandler.Delete)
+		
+		// Comments
+		protected.POST("/posts/:id/comments", commentHandler.Create)
+		protected.POST("/posts/:id/comments/:cid/replies", commentHandler.Reply)
+		protected.DELETE("/posts/:id/comments/:cid", commentHandler.Delete)
 	}
 
 	r.GET("/health", func(c *gin.Context) {

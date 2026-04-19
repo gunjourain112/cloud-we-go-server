@@ -28,7 +28,6 @@ type PostQuery struct {
 	predicates []predicate.Post
 	withAuthor *UserQuery
 	withTags   *TagQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -408,19 +407,12 @@ func (_q *PostQuery) prepareQuery(ctx context.Context) error {
 func (_q *PostQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Post, error) {
 	var (
 		nodes       = []*Post{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withAuthor != nil,
 			_q.withTags != nil,
 		}
 	)
-	if _q.withAuthor != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, post.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Post).scanValues(nil, columns)
 	}
@@ -459,10 +451,7 @@ func (_q *PostQuery) loadAuthor(ctx context.Context, query *UserQuery, nodes []*
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Post)
 	for i := range nodes {
-		if nodes[i].user_posts == nil {
-			continue
-		}
-		fk := *nodes[i].user_posts
+		fk := nodes[i].AuthorID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -479,7 +468,7 @@ func (_q *PostQuery) loadAuthor(ctx context.Context, query *UserQuery, nodes []*
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_posts" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "author_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -573,6 +562,9 @@ func (_q *PostQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != post.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withAuthor != nil {
+			_spec.Node.AddColumnOnce(post.FieldAuthorID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

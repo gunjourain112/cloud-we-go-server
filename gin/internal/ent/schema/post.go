@@ -22,6 +22,7 @@ func (Post) Fields() []ent.Field {
 			NotEmpty(),
 		field.Text("body").
 			NotEmpty(),
+		field.UUID("author_id", uuid.UUID{}),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -35,6 +36,7 @@ func (Post) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("author", User.Type).
 			Ref("posts").
+			Field("author_id").
 			Unique().
 			Required(),
 		edge.To("tags", Tag.Type),

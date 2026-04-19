@@ -35,6 +35,12 @@ func (_c *PostCreate) SetBody(v string) *PostCreate {
 	return _c
 }
 
+// SetAuthorID sets the "author_id" field.
+func (_c *PostCreate) SetAuthorID(v uuid.UUID) *PostCreate {
+	_c.mutation.SetAuthorID(v)
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *PostCreate) SetCreatedAt(v time.Time) *PostCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -74,12 +80,6 @@ func (_c *PostCreate) SetNillableID(v *uuid.UUID) *PostCreate {
 	if v != nil {
 		_c.SetID(*v)
 	}
-	return _c
-}
-
-// SetAuthorID sets the "author" edge to the User entity by ID.
-func (_c *PostCreate) SetAuthorID(id uuid.UUID) *PostCreate {
-	_c.mutation.SetAuthorID(id)
 	return _c
 }
 
@@ -170,6 +170,9 @@ func (_c *PostCreate) check() error {
 			return &ValidationError{Name: "body", err: fmt.Errorf(`ent: validator failed for field "Post.body": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.AuthorID(); !ok {
+		return &ValidationError{Name: "author_id", err: errors.New(`ent: missing required field "Post.author_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Post.created_at"`)}
 	}
@@ -244,7 +247,7 @@ func (_c *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_posts = &nodes[0]
+		_node.AuthorID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.TagsIDs(); len(nodes) > 0 {

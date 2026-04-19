@@ -23,6 +23,8 @@ type Post struct {
 	Title string `json:"title,omitempty"`
 	// Body holds the value of the "body" field.
 	Body string `json:"body,omitempty"`
+	// AuthorID holds the value of the "author_id" field.
+	AuthorID uuid.UUID `json:"author_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -30,7 +32,6 @@ type Post struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PostQuery when eager-loading is set.
 	Edges        PostEdges `json:"edges"`
-	user_posts   *uuid.UUID
 	selectValues sql.SelectValues
 }
 
@@ -74,10 +75,8 @@ func (*Post) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case post.FieldCreatedAt, post.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case post.FieldID:
+		case post.FieldID, post.FieldAuthorID:
 			values[i] = new(uuid.UUID)
-		case post.ForeignKeys[0]: // user_posts
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -111,6 +110,12 @@ func (_m *Post) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Body = value.String
 			}
+		case post.FieldAuthorID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field author_id", values[i])
+			} else if value != nil {
+				_m.AuthorID = *value
+			}
 		case post.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -122,13 +127,6 @@ func (_m *Post) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
-			}
-		case post.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_posts", values[i])
-			} else if value.Valid {
-				_m.user_posts = new(uuid.UUID)
-				*_m.user_posts = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -181,6 +179,9 @@ func (_m *Post) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("body=")
 	builder.WriteString(_m.Body)
+	builder.WriteString(", ")
+	builder.WriteString("author_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AuthorID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
