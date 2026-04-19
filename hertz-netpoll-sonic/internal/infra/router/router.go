@@ -6,7 +6,6 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/auth"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/comment"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/post"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/infra/config"
@@ -20,7 +19,6 @@ func RegisterRoutes(
 	rdb *redis.Client,
 	cfg *config.Config,
 	log *zap.Logger,
-	authHandler *auth.Handler,
 	postHandler *post.Handler,
 	commentHandler *comment.Handler,
 ) {
@@ -36,27 +34,17 @@ func RegisterRoutes(
 		)
 	})
 
-	authGroup := h.Group("/auth")
-	{
-		authGroup.POST("/register", authHandler.Register)
-		authGroup.POST("/login", authHandler.LoginInternal) // Using internal for direct response
-	}
-
 	posts := h.Group("/posts")
 	{
 		posts.GET("", middleware.CacheMiddleware(rdb, 500*time.Millisecond), postHandler.List)
 		posts.GET("/:id", middleware.CacheMiddleware(rdb, 1*time.Second), postHandler.Get)
 		posts.GET("/:id/comments", middleware.CacheMiddleware(rdb, 500*time.Millisecond), commentHandler.List)
-	}
-
-	// Remove AuthMiddleware
-	publicActions := h.Group("")
-	{
-		publicActions.POST("/posts", postHandler.Create)
-		publicActions.DELETE("/posts/:id", postHandler.Delete)
-		publicActions.POST("/posts/:id/comments", commentHandler.Create)
-		publicActions.POST("/posts/:id/comments/:cid/replies", commentHandler.Reply)
-		publicActions.DELETE("/posts/:id/comments/:cid", commentHandler.Delete)
+		
+		posts.POST("", postHandler.Create)
+		posts.DELETE("/:id", postHandler.Delete)
+		posts.POST("/:id/comments", commentHandler.Create)
+		posts.POST("/:id/comments/:cid/replies", commentHandler.Reply)
+		posts.DELETE("/:id/comments/:cid", commentHandler.Delete)
 	}
 
 	h.GET("/health", func(ctx context.Context, c *app.RequestContext) {

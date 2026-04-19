@@ -8,10 +8,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/network/netpoll"
 	"go.uber.org/fx"
 
-	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/auth"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/comment"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/post"
-	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/user"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/infra/config"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/infra/database"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/infra/discord"
@@ -29,9 +27,6 @@ func main() {
 			database.NewMongo,
 			database.NewEntClient,
 			discord.NewClient,
-			user.NewRepository,
-			auth.NewService,
-			auth.NewHandler,
 			post.NewRepository,
 			post.NewService,
 			post.NewHandler,

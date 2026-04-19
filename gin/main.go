@@ -9,10 +9,8 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/auth"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/comment"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/post"
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/user"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/database"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/discord"
@@ -30,9 +28,6 @@ func main() {
 			database.NewMongo,
 			database.NewEntClient,
 			discord.NewClient,
-			user.NewRepository,
-			auth.NewService,
-			auth.NewHandler,
 			post.NewRepository,
 			post.NewService,
 			post.NewHandler,

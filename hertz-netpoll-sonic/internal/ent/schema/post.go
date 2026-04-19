@@ -34,11 +34,6 @@ func (Post) Fields() []ent.Field {
 
 func (Post) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("author", User.Type).
-			Ref("posts").
-			Field("author_id").
-			Unique().
-			Required(),
 		edge.To("tags", Tag.Type),
 	}
 }

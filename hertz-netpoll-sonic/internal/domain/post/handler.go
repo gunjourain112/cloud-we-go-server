@@ -27,69 +27,45 @@ func NewHandler(svc Service) *Handler {
 
 func (h *Handler) Create(ctx context.Context, c *app.RequestContext) {
 	authorID := testUserID
-
 	var req CreateRequest
 	if err := c.Bind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, utils.H{"error": err.Error()})
 		return
 	}
-
-	if err := h.validate.Struct(req); err != nil {
-		c.JSON(http.StatusBadRequest, utils.H{"error": err.Error()})
-		return
-	}
-
 	res, err := h.svc.CreatePost(ctx, authorID, &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusCreated, res)
 }
 
 func (h *Handler) Get(ctx context.Context, c *app.RequestContext) {
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, utils.H{"error": "invalid id"})
-		return
-	}
-
+	id, _ := uuid.Parse(c.Param("id"))
 	res, err := h.svc.GetPost(ctx, id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, utils.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, res)
 }
 
 func (h *Handler) List(ctx context.Context, c *app.RequestContext) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-
 	res, err := h.svc.ListPosts(ctx, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, res)
 }
 
 func (h *Handler) Delete(ctx context.Context, c *app.RequestContext) {
-	authorID := testUserID
-
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, utils.H{"error": "invalid id"})
-		return
-	}
-
-	if err := h.svc.DeletePost(ctx, id, authorID); err != nil {
+	id, _ := uuid.Parse(c.Param("id"))
+	if err := h.svc.DeletePost(ctx, id, testUserID); err != nil {
 		c.JSON(http.StatusForbidden, utils.H{"error": err.Error()})
 		return
 	}
-
 	c.Status(http.StatusNoContent)
 }
