@@ -13,8 +13,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '3.0'
-          memory: 1G
+          cpus: '4.0'
+          memory: 2G
     networks:
       - cloud-we-go-server_default
 
