@@ -12,6 +12,8 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/auth"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/user"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/database"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/logger"
@@ -26,6 +28,9 @@ func main() {
 			database.NewRedis,
 			database.NewMongo,
 			database.NewEntClient,
+			user.NewRepository,
+			auth.NewService,
+			auth.NewHandler,
 			newGinEngine,
 		),
 		fx.Invoke(registerRoutes, startServer),
@@ -49,7 +54,14 @@ func registerRoutes(
 	db *sql.DB,
 	rdb *redis.Client,
 	mdb *mongo.Database,
+	authHandler *auth.Handler,
 ) {
+	authGroup := r.Group("/auth")
+	{
+		authGroup.POST("/register", authHandler.Register)
+		authGroup.POST("/login", authHandler.Login)
+	}
+
 	r.GET("/health", func(c *gin.Context) {
 		status := gin.H{
 			"status": "ok",
