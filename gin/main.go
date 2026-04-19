@@ -11,10 +11,10 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-)
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/config"
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/database"
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/logger"
+
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/database"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/logger"
 )
 
 func main() {
@@ -39,7 +39,6 @@ func newGinEngine(cfg *config.Config, log *zap.Logger) *gin.Engine {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
-	// TODO: Add custom zap logger middleware and other common middlewares here
 	
 	return r
 }
