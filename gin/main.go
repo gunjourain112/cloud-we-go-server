@@ -18,6 +18,7 @@ import (
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/user"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/database"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/discord"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/logger"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/middleware"
 )
@@ -31,6 +32,7 @@ func main() {
 			database.NewRedis,
 			database.NewMongo,
 			database.NewEntClient,
+			discord.NewClient,
 			user.NewRepository,
 			auth.NewService,
 			auth.NewHandler,
@@ -42,7 +44,7 @@ func main() {
 			comment.NewHandler,
 			newGinEngine,
 		),
-		fx.Invoke(registerRoutes, startServer),
+		fx.Invoke(database.RunMigration, registerRoutes, startServer),
 	).Run()
 }
 
