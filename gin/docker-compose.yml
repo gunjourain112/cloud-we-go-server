@@ -1,0 +1,23 @@
+services:
+  gin-server:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_ENV=development
+      - GIN_PORT=8080
+      - POSTGRES_HOST=cwg_postgres
+      - REDIS_HOST=cwg_redis
+      - MONGO_URI=mongodb://cwg:cwg@cwg_mongo:27017
+      - POSTGRES_AUTO_MIGRATE=true
+    deploy:
+      resources:
+        limits:
+          cpus: '3.0'
+          memory: 1G
+    networks:
+      - cloud-we-go-server_default
+
+networks:
+  cloud-we-go-server_default:
+    external: true

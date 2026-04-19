@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"github.com/zsais/go-gin-prometheus"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.uber.org/zap"
 
@@ -24,7 +25,10 @@ func NewEngine(cfg *config.Config) *gin.Engine {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
-
+	
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(r)
+	
 	return r
 }
 
@@ -39,7 +43,6 @@ func RegisterRoutes(
 	postHandler *post.Handler,
 	commentHandler *comment.Handler,
 ) {
-
 	authLimit := middleware.RateLimitMiddleware(cfg, rdb, 5)
 	authGroup := r.Group("/auth", authLimit)
 	{
@@ -60,7 +63,7 @@ func RegisterRoutes(
 	{
 		protected.POST("/posts", postHandler.Create)
 		protected.DELETE("/posts/:id", postHandler.Delete)
-
+		
 		protected.POST("/posts/:id/comments", commentHandler.Create)
 		protected.POST("/posts/:id/comments/:cid/replies", commentHandler.Reply)
 		protected.DELETE("/posts/:id/comments/:cid", commentHandler.Delete)
