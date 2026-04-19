@@ -53,7 +53,7 @@ func newHertzServer(cfg *config.Config) *server.Hertz {
 	return h
 }
 
-func startServer(lc fx.Lifecycle, h *server.Hertz, log *zap.Logger) {
+func startServer(lc fx.Lifecycle, h *server.Hertz) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go h.Run()

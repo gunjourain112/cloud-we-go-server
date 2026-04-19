@@ -8,13 +8,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/user"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/infra/config"
+	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/user"
 )
 
 type Service interface {
 	Register(ctx context.Context, req *RegisterRequest) error
 	Login(ctx context.Context, req *LoginRequest) (*TokenResponse, error)
+	LoginInternal(ctx context.Context, req *LoginRequest) (*LoginInternalResponse, error)
 }
 
 type service struct {
@@ -57,4 +58,17 @@ func (s *service) Login(ctx context.Context, req *LoginRequest) (*TokenResponse,
 	}
 
 	return &TokenResponse{AccessToken: tokenString}, nil
+}
+
+func (s *service) LoginInternal(ctx context.Context, req *LoginRequest) (*LoginInternalResponse, error) {
+	u, err := s.userRepo.GetByEmail(ctx, req.Email)
+	if err != nil {
+		return nil, errors.New("invalid credentials")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(req.Password)); err != nil {
+		return nil, errors.New("invalid credentials")
+	}
+
+	return &LoginInternalResponse{UserID: u.ID.String()}, nil
 }

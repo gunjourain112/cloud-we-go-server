@@ -43,13 +43,27 @@ func RegisterRoutes(
 	postHandler *post.Handler,
 	commentHandler *comment.Handler,
 ) {
-	// Public Group
+	// 1. Access Logger (Unified with Hertz)
+	r.Use(func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		latency := time.Since(start)
+		log.Info("Request",
+			zap.Int("status", c.Writer.Status()),
+			zap.String("method", c.Request.Method),
+			zap.String("path", c.Request.URL.Path),
+			zap.Duration("latency", latency),
+		)
+	})
+
+	// 2. Auth Routes
 	authGroup := r.Group("/auth")
 	{
 		authGroup.POST("/register", authHandler.Register)
 		authGroup.POST("/login", authHandler.Login)
 	}
 
+	// 3. Post Public (Cached)
 	posts := r.Group("/posts")
 	{
 		posts.GET("", middleware.CacheMiddleware(rdb, 500*time.Millisecond), postHandler.List)
@@ -57,9 +71,8 @@ func RegisterRoutes(
 		posts.GET("/:id/comments", middleware.CacheMiddleware(rdb, 500*time.Millisecond), commentHandler.List)
 	}
 
-	// Protected Group
-	protected := r.Group("")
-	protected.Use(middleware.AuthMiddleware(cfg))
+	// 4. Protected Actions (JWT)
+	protected := r.Group("", middleware.AuthMiddleware(cfg))
 	{
 		protected.POST("/posts", postHandler.Create)
 		protected.DELETE("/posts/:id", postHandler.Delete)

@@ -41,23 +41,13 @@ func (h *Handler) Register(ctx context.Context, c *app.RequestContext) {
 	c.Status(http.StatusCreated)
 }
 
-func (h *Handler) Login(ctx context.Context, c *app.RequestContext) {
-	var req LoginRequest
-	if err := c.Bind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, utils.H{"error": err.Error()})
-		return
-	}
-
+func (h *Handler) LoginInternal(ctx context.Context, req *LoginRequest) (*LoginInternalResponse, error) {
 	if err := h.validate.Struct(req); err != nil {
-		c.JSON(http.StatusBadRequest, utils.H{"error": err.Error()})
-		return
+		return nil, err
 	}
+	return h.svc.LoginInternal(ctx, req)
+}
 
-	res, err := h.svc.Login(ctx, &req)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, utils.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, res)
+type LoginInternalResponse struct {
+	UserID string
 }

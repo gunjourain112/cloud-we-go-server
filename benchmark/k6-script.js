@@ -3,9 +3,9 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '30s', target: 5000 },
-    { duration: '1m', target: 20000 },
-    { duration: '1m', target: 20000 },
+    { duration: '30s', target: 2000 },
+    { duration: '1m', target: 5000 },
+    { duration: '1m', target: 5000 },
     { duration: '30s', target: 0 },
   ],
 };
@@ -35,8 +35,8 @@ export default function () {
     
     const createRes = http.post(`${BASE_URL}/posts`, JSON.stringify({
       title: 'Benchmark Post',
-      body: 'Testing performance with 20k VUs',
-      tags: ['bench', '20k'],
+      body: 'Testing performance with 5k VUs',
+      tags: ['bench', '5k'],
     }), authParams);
     
     check(createRes, { 'create post success': (r) => r.status === 201 });

@@ -7,9 +7,6 @@ if [ -z "$TARGET" ]; then
 fi
 
 PORT=8080
-if [ "$TARGET" == "hertz" ]; then
-  PORT=8081
-fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RESULT_DIR="${SCRIPT_DIR}/results"

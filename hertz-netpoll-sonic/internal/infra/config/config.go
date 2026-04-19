@@ -21,7 +21,7 @@ type AppConfig struct {
 }
 
 type ServerConfig struct {
-	Port int `env:"HERTZ_PORT" envDefault:"8081"`
+	Port int `env:"HERTZ_PORT" envDefault:"8080"`
 }
 
 type PostgresConfig struct {
