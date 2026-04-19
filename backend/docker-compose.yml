@@ -1,0 +1,68 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: cwg_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongo:
+    image: mongo:7-jammy
+    container_name: cwg_mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: cwg
+      MONGO_INITDB_ROOT_PASSWORD: cwg
+      MONGO_INITDB_DATABASE: cwg
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: cwg_postgres
+    environment:
+      POSTGRES_USER: cwg
+      POSTGRES_PASSWORD: cwg
+      POSTGRES_DB: cwg
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cwg"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongo_data:
