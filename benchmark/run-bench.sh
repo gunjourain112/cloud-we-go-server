@@ -9,6 +9,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RESULT_DIR="${SCRIPT_DIR}/results"
 mkdir -p "$RESULT_DIR"
+chmod 777 "$RESULT_DIR"
 
 CONTAINER_ID=$(podman ps --filter "name=${TARGET}" --format "{{.ID}}" | head -n 1)
 

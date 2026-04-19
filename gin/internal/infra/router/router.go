@@ -43,27 +43,26 @@ func RegisterRoutes(
 	postHandler *post.Handler,
 	commentHandler *comment.Handler,
 ) {
-	authLimit := middleware.RateLimitMiddleware(cfg, rdb, 5)
+	authLimit := middleware.RateLimitMiddleware(cfg, rdb, 10)
 	authGroup := r.Group("/auth", authLimit)
 	{
 		authGroup.POST("/register", authHandler.Register)
 		authGroup.POST("/login", authHandler.Login)
 	}
 
-	postLimit := middleware.RateLimitMiddleware(cfg, rdb, 200)
+	postLimit := middleware.RateLimitMiddleware(cfg, rdb, 500)
 	p := r.Group("/posts", postLimit)
 	{
-		p.GET("", middleware.CacheMiddleware(rdb, 1*time.Second), postHandler.List)
-		p.GET("/:id", middleware.CacheMiddleware(rdb, 2*time.Second), postHandler.Get)
-		p.GET("/:id/comments", middleware.CacheMiddleware(rdb, 1*time.Second), commentHandler.List)
+		p.GET("", middleware.CacheMiddleware(rdb, 500*time.Millisecond), postHandler.List)
+		p.GET("/:id", middleware.CacheMiddleware(rdb, 1*time.Second), postHandler.Get)
+		p.GET("/:id/comments", middleware.CacheMiddleware(rdb, 500*time.Millisecond), commentHandler.List)
 	}
 
-	actionLimit := middleware.RateLimitMiddleware(cfg, rdb, 20)
+	actionLimit := middleware.RateLimitMiddleware(cfg, rdb, 50)
 	protected := r.Group("", middleware.AuthMiddleware(cfg), actionLimit)
 	{
 		protected.POST("/posts", postHandler.Create)
 		protected.DELETE("/posts/:id", postHandler.Delete)
-		
 		protected.POST("/posts/:id/comments", commentHandler.Create)
 		protected.POST("/posts/:id/comments/:cid/replies", commentHandler.Reply)
 		protected.DELETE("/posts/:id/comments/:cid", commentHandler.Delete)

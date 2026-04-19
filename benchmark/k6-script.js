@@ -3,8 +3,8 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '30s', target: 200 },
-    { duration: '1m', target: 500 },
+    { duration: '30s', target: 500 },  // 30초 내에 500명 도달
+    { duration: '3m', target: 1000 },  // 3분간 1000명까지 늘리고 유지
     { duration: '30s', target: 0 },
   ],
 };
@@ -16,7 +16,6 @@ export default function () {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  // 1. Login (CPU Heavy - Bcrypt)
   const loginRes = http.post(`${BASE_URL}/auth/login`, JSON.stringify({
     email: 'user1@example.com',
     password: 'password123',
@@ -25,7 +24,6 @@ export default function () {
   check(loginRes, { 'login success': (r) => r.status === 200 });
   const token = loginRes.json('access_token');
 
-  // 2. Protected Action (JWT Verify + DB Write)
   if (token) {
     const authParams = {
       headers: {
@@ -43,7 +41,6 @@ export default function () {
     check(createRes, { 'create post success': (r) => r.status === 201 });
   }
 
-  // 3. Public Read (Cached)
   const postsRes = http.get(`${BASE_URL}/posts?limit=10`);
   check(postsRes, { 'list posts success': (r) => r.status === 200 });
 
