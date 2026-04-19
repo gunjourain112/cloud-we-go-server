@@ -7,7 +7,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/config"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
 )
 
 func NewPostgres(cfg *config.Config) (*sql.DB, error) {

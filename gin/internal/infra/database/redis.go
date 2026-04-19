@@ -6,7 +6,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/config"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
 )
 
 func NewRedis(cfg *config.Config) (*redis.Client, error) {

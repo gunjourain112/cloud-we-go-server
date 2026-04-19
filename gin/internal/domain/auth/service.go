@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/config"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/user"
 )
 

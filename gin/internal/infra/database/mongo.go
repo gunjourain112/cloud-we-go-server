@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/config"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
 )
 
 func NewMongo(cfg *config.Config) (*mongo.Database, error) {
