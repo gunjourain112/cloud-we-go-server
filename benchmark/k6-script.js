@@ -3,9 +3,8 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '30s', target: 1000 }, // 30초간 1000명
-    { duration: '1m', target: 2000 },  // 1분간 2000명 도달
-    { duration: '1m', target: 2000 },  // 1분 유지
+    { duration: '30s', target: 5000 },
+    { duration: '1m', target: 10000 },
     { duration: '30s', target: 0 },
   ],
 };
@@ -17,30 +16,12 @@ export default function () {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  const loginRes = http.post(`${BASE_URL}/auth/login`, JSON.stringify({
-    email: 'user1@example.com',
-    password: 'password123',
+  const createRes = http.post(`${BASE_URL}/posts`, JSON.stringify({
+    title: 'Benchmark Post',
+    body: 'Raw performance testing without auth',
+    tags: ['bench', 'noauth'],
   }), params);
-  
-  check(loginRes, { 'login success': (r) => r.status === 200 });
-  const token = loginRes.json('access_token');
-
-  if (token) {
-    const authParams = {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    };
-    
-    const createRes = http.post(`${BASE_URL}/posts`, JSON.stringify({
-      title: 'Benchmark Post',
-      body: 'Finding stable threshold',
-      tags: ['bench', 'stable'],
-    }), authParams);
-    
-    check(createRes, { 'create post success': (r) => r.status === 201 });
-  }
+  check(createRes, { 'create post success': (r) => r.status === 201 });
 
   const postsRes = http.get(`${BASE_URL}/posts?limit=10`);
   check(postsRes, { 'list posts success': (r) => r.status === 200 });

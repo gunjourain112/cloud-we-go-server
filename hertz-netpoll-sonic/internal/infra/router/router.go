@@ -6,7 +6,6 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/hertz-contrib/jwt"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/auth"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/comment"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/post"
@@ -37,42 +36,10 @@ func RegisterRoutes(
 		)
 	})
 
-	authMiddleware, _ := jwt.New(&jwt.HertzJWTMiddleware{
-		Key:         []byte(cfg.JWT.Secret),
-		Timeout:     time.Duration(cfg.JWT.ExpireHours) * time.Hour,
-		IdentityKey: "user_id",
-		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(string); ok {
-				return jwt.MapClaims{"sub": v}
-			}
-			return jwt.MapClaims{}
-		},
-		Authenticator: func(ctx context.Context, c *app.RequestContext) (interface{}, error) {
-			var req auth.LoginRequest
-			if err := c.Bind(&req); err != nil {
-				return nil, jwt.ErrMissingLoginValues
-			}
-			res, err := authHandler.LoginInternal(ctx, &req)
-			if err != nil {
-				return nil, jwt.ErrFailedAuthentication
-			}
-			return res.UserID, nil
-		},
-		Authorizator: func(data interface{}, ctx context.Context, c *app.RequestContext) bool {
-			if v, ok := data.(string); ok && v != "" {
-				c.Set("user_id", v)
-				return true
-			}
-			return false
-		},
-		TokenLookup:   "header: Authorization",
-		TokenHeadName: "Bearer",
-	})
-
 	authGroup := h.Group("/auth")
 	{
 		authGroup.POST("/register", authHandler.Register)
-		authGroup.POST("/login", authMiddleware.LoginHandler)
+		authGroup.POST("/login", authHandler.LoginInternal) // Using internal for direct response
 	}
 
 	posts := h.Group("/posts")
@@ -82,14 +49,14 @@ func RegisterRoutes(
 		posts.GET("/:id/comments", middleware.CacheMiddleware(rdb, 500*time.Millisecond), commentHandler.List)
 	}
 
-	protected := h.Group("")
-	protected.Use(authMiddleware.MiddlewareFunc())
+	// Remove AuthMiddleware
+	publicActions := h.Group("")
 	{
-		protected.POST("/posts", postHandler.Create)
-		protected.DELETE("/posts/:id", postHandler.Delete)
-		protected.POST("/posts/:id/comments", commentHandler.Create)
-		protected.POST("/posts/:id/comments/:cid/replies", commentHandler.Reply)
-		protected.DELETE("/posts/:id/comments/:cid", commentHandler.Delete)
+		publicActions.POST("/posts", postHandler.Create)
+		publicActions.DELETE("/posts/:id", postHandler.Delete)
+		publicActions.POST("/posts/:id/comments", commentHandler.Create)
+		publicActions.POST("/posts/:id/comments/:cid/replies", commentHandler.Reply)
+		publicActions.DELETE("/posts/:id/comments/:cid", commentHandler.Delete)
 	}
 
 	h.GET("/health", func(ctx context.Context, c *app.RequestContext) {

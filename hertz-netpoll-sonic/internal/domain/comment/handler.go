@@ -11,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
+var testUserID = uuid.MustParse("00000000-0000-0000-0000-000000000001")
+
 type Handler struct {
 	svc      Service
 	validate *validator.Validate
@@ -25,8 +27,7 @@ func NewHandler(svc Service) *Handler {
 
 func (h *Handler) Create(ctx context.Context, c *app.RequestContext) {
 	postID, _ := uuid.Parse(c.Param("id"))
-	uidStr, _ := c.Get("user_id")
-	authorID, _ := uuid.Parse(uidStr.(string))
+	authorID := testUserID
 
 	var req CreateRequest
 	if err := c.Bind(&req); err != nil {
@@ -57,8 +58,7 @@ func (h *Handler) List(ctx context.Context, c *app.RequestContext) {
 
 func (h *Handler) Reply(ctx context.Context, c *app.RequestContext) {
 	commentID, _ := bson.ObjectIDFromHex(c.Param("cid"))
-	uidStr, _ := c.Get("user_id")
-	authorID, _ := uuid.Parse(uidStr.(string))
+	authorID := testUserID
 
 	var req ReplyRequest
 	if err := c.Bind(&req); err != nil {
@@ -76,8 +76,7 @@ func (h *Handler) Reply(ctx context.Context, c *app.RequestContext) {
 
 func (h *Handler) Delete(ctx context.Context, c *app.RequestContext) {
 	commentID, _ := bson.ObjectIDFromHex(c.Param("cid"))
-	uidStr, _ := c.Get("user_id")
-	authorID, _ := uuid.Parse(uidStr.(string))
+	authorID := testUserID
 
 	if err := h.svc.DeleteComment(ctx, commentID, authorID); err != nil {
 		c.JSON(http.StatusInternalServerError, utils.H{"error": err.Error()})

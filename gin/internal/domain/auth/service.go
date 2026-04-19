@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/user"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/user"
 )
 
 type Service interface {
@@ -27,12 +26,7 @@ func NewService(userRepo user.Repository, cfg *config.Config) Service {
 }
 
 func (s *service) Register(ctx context.Context, req *RegisterRequest) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.userRepo.Create(ctx, req.Email, string(hash), req.Name)
+	_, err := s.userRepo.Create(ctx, req.Email, req.Password, req.Name)
 	return err
 }
 
@@ -42,7 +36,7 @@ func (s *service) Login(ctx context.Context, req *LoginRequest) (*TokenResponse,
 		return nil, errors.New("invalid credentials")
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(req.Password)); err != nil {
+	if u.PasswordHash != req.Password {
 		return nil, errors.New("invalid credentials")
 	}
 

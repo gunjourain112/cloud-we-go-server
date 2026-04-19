@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/comment"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/post"
@@ -36,13 +35,12 @@ func main() {
 	postRepo := post.NewRepository(entClient)
 	commentRepo := comment.NewRepository(mdb)
 
-	password, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
-	pwHash := string(password)
+	pwPlain := "password123"
 
 	fmt.Println("🌱 Seeding data...")
 
 	for i := 1; i <= 10; i++ {
-		u, err := userRepo.Create(ctx, fmt.Sprintf("user%d@example.com", i), pwHash, fmt.Sprintf("User%d", i))
+		u, err := userRepo.Create(ctx, fmt.Sprintf("user%d@example.com", i), pwPlain, fmt.Sprintf("User%d", i))
 		if err != nil {
 			fmt.Printf("User %d already exists, skipping\n", i)
 			u, _ = userRepo.GetByEmail(ctx, fmt.Sprintf("user%d@example.com", i))

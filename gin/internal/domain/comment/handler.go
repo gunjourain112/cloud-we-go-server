@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
+var testUserID = uuid.MustParse("00000000-0000-0000-0000-000000000001")
+
 type Handler struct {
 	svc      Service
 	validate *validator.Validate
@@ -23,8 +25,7 @@ func NewHandler(svc Service) *Handler {
 
 func (h *Handler) Create(c *gin.Context) {
 	postID, _ := uuid.Parse(c.Param("id"))
-	uidStr, _ := c.Get("user_id")
-	authorID, _ := uuid.Parse(uidStr.(string))
+	authorID := testUserID
 
 	var req CreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -55,8 +56,7 @@ func (h *Handler) List(c *gin.Context) {
 
 func (h *Handler) Reply(c *gin.Context) {
 	commentID, _ := bson.ObjectIDFromHex(c.Param("cid"))
-	uidStr, _ := c.Get("user_id")
-	authorID, _ := uuid.Parse(uidStr.(string))
+	authorID := testUserID
 
 	var req ReplyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -74,8 +74,7 @@ func (h *Handler) Reply(c *gin.Context) {
 
 func (h *Handler) Delete(c *gin.Context) {
 	commentID, _ := bson.ObjectIDFromHex(c.Param("cid"))
-	uidStr, _ := c.Get("user_id")
-	authorID, _ := uuid.Parse(uidStr.(string))
+	authorID := testUserID
 
 	if err := h.svc.DeleteComment(c.Request.Context(), commentID, authorID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

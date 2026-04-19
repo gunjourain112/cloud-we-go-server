@@ -11,6 +11,8 @@ import (
 	"github.com/google/uuid"
 )
 
+var testUserID = uuid.MustParse("00000000-0000-0000-0000-000000000001")
+
 type Handler struct {
 	svc      Service
 	validate *validator.Validate
@@ -24,8 +26,7 @@ func NewHandler(svc Service) *Handler {
 }
 
 func (h *Handler) Create(ctx context.Context, c *app.RequestContext) {
-	uidStr, _ := c.Get("user_id")
-	authorID, _ := uuid.Parse(uidStr.(string))
+	authorID := testUserID
 
 	var req CreateRequest
 	if err := c.Bind(&req); err != nil {
@@ -77,8 +78,7 @@ func (h *Handler) List(ctx context.Context, c *app.RequestContext) {
 }
 
 func (h *Handler) Delete(ctx context.Context, c *app.RequestContext) {
-	uidStr, _ := c.Get("user_id")
-	authorID, _ := uuid.Parse(uidStr.(string))
+	authorID := testUserID
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
