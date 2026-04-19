@@ -6,6 +6,11 @@ if [ -z "$TARGET" ]; then
   exit 1
 fi
 
+PORT=8080
+if [ "$TARGET" == "hertz" ]; then
+  PORT=8081
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RESULT_DIR="${SCRIPT_DIR}/results"
 mkdir -p "$RESULT_DIR"
@@ -18,7 +23,7 @@ if [ -z "$CONTAINER_ID" ]; then
   exit 1
 fi
 
-echo "Target detected: $TARGET (ID: $CONTAINER_ID)"
+echo "Target detected: $TARGET (ID: $CONTAINER_ID, Port: $PORT)"
 echo "POST,CPU,MEM" > "${RESULT_DIR}/${TARGET}_resource.csv"
 
 echo "Monitoring resources..."
@@ -32,7 +37,7 @@ echo "Running k6 attack via Podman..."
 podman run --rm -i --network=host \
     -v "${SCRIPT_DIR}:/app:Z" \
     -w /app \
-    grafana/k6 run -e BASE_URL=http://localhost:8080 k6-script.js --summary-export="results/${TARGET}_result.json"
+    grafana/k6 run -e BASE_URL=http://localhost:${PORT} k6-script.js --summary-export="results/${TARGET}_result.json"
 
 kill $MONITOR_PID
 echo "Finished. Results saved in benchmark/results/"
