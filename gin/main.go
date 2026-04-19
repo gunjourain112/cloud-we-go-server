@@ -2,13 +2,10 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
@@ -20,7 +17,7 @@ import (
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/database"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/discord"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/logger"
-	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/middleware"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/router"
 )
 
 func main() {
@@ -42,78 +39,10 @@ func main() {
 			comment.NewRepository,
 			comment.NewService,
 			comment.NewHandler,
-			newGinEngine,
+			router.NewEngine,
 		),
-		fx.Invoke(database.RunMigration, registerRoutes, startServer),
+		fx.Invoke(database.RunMigration, router.RegisterRoutes, startServer),
 	).Run()
-}
-
-func newGinEngine(cfg *config.Config, log *zap.Logger) *gin.Engine {
-	if cfg.App.Env == "production" {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	r := gin.New()
-	r.Use(gin.Recovery())
-	
-	return r
-}
-
-func registerRoutes(
-	r *gin.Engine,
-	log *zap.Logger,
-	db *sql.DB,
-	rdb *redis.Client,
-	mdb *mongo.Database,
-	cfg *config.Config,
-	authHandler *auth.Handler,
-	postHandler *post.Handler,
-	commentHandler *comment.Handler,
-) {
-	authGroup := r.Group("/auth")
-	{
-		authGroup.POST("/register", authHandler.Register)
-		authGroup.POST("/login", authHandler.Login)
-	}
-
-	// Public routes
-	r.GET("/posts", postHandler.List)
-	r.GET("/posts/:id", postHandler.Get)
-	r.GET("/posts/:id/comments", commentHandler.List)
-
-	// Protected routes
-	protected := r.Group("")
-	protected.Use(middleware.AuthMiddleware(cfg))
-	{
-		protected.POST("/posts", postHandler.Create)
-		protected.DELETE("/posts/:id", postHandler.Delete)
-		
-		// Comments
-		protected.POST("/posts/:id/comments", commentHandler.Create)
-		protected.POST("/posts/:id/comments/:cid/replies", commentHandler.Reply)
-		protected.DELETE("/posts/:id/comments/:cid", commentHandler.Delete)
-	}
-
-	r.GET("/health", func(c *gin.Context) {
-		status := gin.H{
-			"status": "ok",
-			"db":     "ok",
-			"redis":  "ok",
-			"mongo":  "ok",
-		}
-
-		if err := db.Ping(); err != nil {
-			status["db"] = "error: " + err.Error()
-		}
-		if err := rdb.Ping(c).Err(); err != nil {
-			status["redis"] = "error: " + err.Error()
-		}
-		if err := mdb.Client().Ping(c, nil); err != nil {
-			status["mongo"] = "error: " + err.Error()
-		}
-
-		c.JSON(http.StatusOK, status)
-	})
 }
 
 func startServer(lc fx.Lifecycle, r *gin.Engine, cfg *config.Config, log *zap.Logger) {

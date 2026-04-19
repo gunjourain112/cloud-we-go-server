@@ -3,14 +3,14 @@ package database
 import (
 	"database/sql"
 
+	"context"
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
+	"fmt"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/ent"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"context"
-	"fmt"
 )
 
 func NewEntClient(db *sql.DB) *ent.Client {

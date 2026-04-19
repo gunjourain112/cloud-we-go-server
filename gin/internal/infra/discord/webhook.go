@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
+	"github.com/redis/go-redis/v9"
 )
 
 type Client struct {
