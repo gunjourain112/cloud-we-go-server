@@ -43,23 +43,23 @@ func RegisterRoutes(
 	postHandler *post.Handler,
 	commentHandler *comment.Handler,
 ) {
-	authLimit := middleware.RateLimitMiddleware(cfg, rdb, 10)
-	authGroup := r.Group("/auth", authLimit)
+	// Public Group
+	authGroup := r.Group("/auth")
 	{
 		authGroup.POST("/register", authHandler.Register)
 		authGroup.POST("/login", authHandler.Login)
 	}
 
-	postLimit := middleware.RateLimitMiddleware(cfg, rdb, 500)
-	p := r.Group("/posts", postLimit)
+	posts := r.Group("/posts")
 	{
-		p.GET("", middleware.CacheMiddleware(rdb, 500*time.Millisecond), postHandler.List)
-		p.GET("/:id", middleware.CacheMiddleware(rdb, 1*time.Second), postHandler.Get)
-		p.GET("/:id/comments", middleware.CacheMiddleware(rdb, 500*time.Millisecond), commentHandler.List)
+		posts.GET("", middleware.CacheMiddleware(rdb, 500*time.Millisecond), postHandler.List)
+		posts.GET("/:id", middleware.CacheMiddleware(rdb, 1*time.Second), postHandler.Get)
+		posts.GET("/:id/comments", middleware.CacheMiddleware(rdb, 500*time.Millisecond), commentHandler.List)
 	}
 
-	actionLimit := middleware.RateLimitMiddleware(cfg, rdb, 50)
-	protected := r.Group("", middleware.AuthMiddleware(cfg), actionLimit)
+	// Protected Group
+	protected := r.Group("")
+	protected.Use(middleware.AuthMiddleware(cfg))
 	{
 		protected.POST("/posts", postHandler.Create)
 		protected.DELETE("/posts/:id", postHandler.Delete)

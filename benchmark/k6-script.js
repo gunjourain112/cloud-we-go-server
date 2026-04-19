@@ -3,8 +3,9 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '30s', target: 500 },  // 30초 내에 500명 도달
-    { duration: '3m', target: 1000 },  // 3분간 1000명까지 늘리고 유지
+    { duration: '1m', target: 5000 },  // 1분간 5천 명
+    { duration: '2m', target: 20000 }, // 2분간 2만 명까지
+    { duration: '1m', target: 20000 }, // 1분 유지
     { duration: '30s', target: 0 },
   ],
 };
@@ -34,8 +35,8 @@ export default function () {
     
     const createRes = http.post(`${BASE_URL}/posts`, JSON.stringify({
       title: 'Benchmark Post',
-      body: 'Testing performance with JWT and DB write',
-      tags: ['bench', 'test'],
+      body: 'Testing performance with 20k VUs',
+      tags: ['bench', '20k'],
     }), authParams);
     
     check(createRes, { 'create post success': (r) => r.status === 201 });
