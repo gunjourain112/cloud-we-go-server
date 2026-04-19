@@ -34,6 +34,7 @@ type PostgresConfig struct {
 	MaxIdleConns    int    `env:"POSTGRES_MAX_IDLE_CONNS"    envDefault:"15"`
 	ConnMaxLifetime int    `env:"POSTGRES_CONN_MAX_LIFETIME" envDefault:"30"`
 	ConnMaxIdle     int    `env:"POSTGRES_CONN_MAX_IDLE"     envDefault:"10"`
+	AutoMigrate     bool   `env:"POSTGRES_AUTO_MIGRATE"      envDefault:"false"`
 }
 
 type RedisConfig struct {
