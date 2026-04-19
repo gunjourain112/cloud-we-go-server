@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/network/netpoll"
 	"go.uber.org/fx"
 	"go.uber.org/zap"

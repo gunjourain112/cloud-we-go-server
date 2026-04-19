@@ -14,7 +14,7 @@ FROM alpine:latest
 
 WORKDIR /app
 COPY --from=builder /app/main .
-COPY ../gin/.env.example .env
+COPY .env.example .env
 
 EXPOSE 8081
 
