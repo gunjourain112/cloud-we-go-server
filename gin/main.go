@@ -13,10 +13,12 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/auth"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/post"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/domain/user"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/config"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/database"
 	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/logger"
+	"github.com/gunjourain112/cloud-we-go-server/gin/internal/infra/middleware"
 )
 
 func main() {
@@ -31,6 +33,9 @@ func main() {
 			user.NewRepository,
 			auth.NewService,
 			auth.NewHandler,
+			post.NewRepository,
+			post.NewService,
+			post.NewHandler,
 			newGinEngine,
 		),
 		fx.Invoke(registerRoutes, startServer),
@@ -54,12 +59,26 @@ func registerRoutes(
 	db *sql.DB,
 	rdb *redis.Client,
 	mdb *mongo.Database,
+	cfg *config.Config,
 	authHandler *auth.Handler,
+	postHandler *post.Handler,
 ) {
 	authGroup := r.Group("/auth")
 	{
 		authGroup.POST("/register", authHandler.Register)
 		authGroup.POST("/login", authHandler.Login)
+	}
+
+	// Public routes
+	r.GET("/posts", postHandler.List)
+	r.GET("/posts/:id", postHandler.Get)
+
+	// Protected routes
+	protected := r.Group("")
+	protected.Use(middleware.AuthMiddleware(cfg))
+	{
+		protected.POST("/posts", postHandler.Create)
+		protected.DELETE("/posts/:id", postHandler.Delete)
 	}
 
 	r.GET("/health", func(c *gin.Context) {
