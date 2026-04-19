@@ -7,7 +7,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/network/netpoll"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/auth"
 	"github.com/gunjourain112/cloud-we-go-server/hertz/internal/domain/comment"

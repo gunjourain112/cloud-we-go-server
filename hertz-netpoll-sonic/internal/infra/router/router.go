@@ -25,7 +25,6 @@ func RegisterRoutes(
 	postHandler *post.Handler,
 	commentHandler *comment.Handler,
 ) {
-	// 1. Access Logger
 	h.Use(func(ctx context.Context, c *app.RequestContext) {
 		start := time.Now()
 		c.Next(ctx)
@@ -38,7 +37,6 @@ func RegisterRoutes(
 		)
 	})
 
-	// 2. Official JWT Middleware
 	authMiddleware, _ := jwt.New(&jwt.HertzJWTMiddleware{
 		Key:         []byte(cfg.JWT.Secret),
 		Timeout:     time.Duration(cfg.JWT.ExpireHours) * time.Hour,
@@ -71,14 +69,12 @@ func RegisterRoutes(
 		TokenHeadName: "Bearer",
 	})
 
-	// 3. Auth Routes
 	authGroup := h.Group("/auth")
 	{
 		authGroup.POST("/register", authHandler.Register)
 		authGroup.POST("/login", authMiddleware.LoginHandler)
 	}
 
-	// 4. Post Public (Custom Optimized Cache)
 	posts := h.Group("/posts")
 	{
 		posts.GET("", middleware.CacheMiddleware(rdb, 500*time.Millisecond), postHandler.List)
@@ -86,7 +82,6 @@ func RegisterRoutes(
 		posts.GET("/:id/comments", middleware.CacheMiddleware(rdb, 500*time.Millisecond), commentHandler.List)
 	}
 
-	// 5. Protected Actions
 	protected := h.Group("")
 	protected.Use(authMiddleware.MiddlewareFunc())
 	{
